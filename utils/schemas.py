@@ -65,7 +65,7 @@ class AnswerFeedback(BaseModel):
     )
 
 class Decision(BaseModel):
-    decision: List[Literal["ocr", "od", "sc"]] = Field(
+    decision: Literal["ocr", "od", "sc"] = Field(
         description="Decide which tools to use. ocr is for OCR, od is for object detection, and sc is for scene captioning.",
     )
     reasoning: str = Field(

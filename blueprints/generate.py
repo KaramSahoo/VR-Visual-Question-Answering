@@ -15,9 +15,14 @@ def generate_answer():
         # Check if 'mission' key is in the JSON data
         if 'question' not in data:
             return jsonify({"error": "Missing 'question' key in request data"}), 400
+        
+        # Check if 'img_path' key is in the JSON data
+        if 'img_path' not in data:
+            return jsonify({"error": "Missing 'img_path' key in request data"}), 400
 
         # Extract the 'question' value from the request
         question = data['question']
+        img_path = data['img_path']
 
         # Initialize LLM and workflow
         llm = g.llm_model
@@ -28,7 +33,7 @@ def generate_answer():
         workflow.compile_workflow()
 
         # Invoke the workflow
-        state = workflow.invoke_workflow(question=question)
+        state = workflow.invoke_workflow(question=question, img_path=img_path)
         logger.success("[green]Workflow execution completed![/green]")
 
         # print(f"Workflow state: {state}")

@@ -3,11 +3,10 @@ from PIL import Image
 import requests
 import copy
 
-model_id = 'microsoft/Florence-2-large'
-model = AutoModelForCausalLM.from_pretrained(model_id, trust_remote_code=True).eval().cuda()
-processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
 
-def run_example(task_prompt, text_input=None):
+def run_example(task_prompt, text_input=None, img_path=None, processor=None, model=None):
+	image = Image.open(img_path)
+
 	if text_input is None:
 		prompt = task_prompt
 	else:
@@ -29,7 +28,3 @@ def run_example(task_prompt, text_input=None):
 	)
 
 	return parsed_answer
-
-image = Image.open("pic1.jpg")
-task_prompt = '<OCR>'
-print(run_example(task_prompt)["<OCR>"].strip())

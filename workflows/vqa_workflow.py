@@ -2,13 +2,15 @@ from typing import TypedDict, Annotated, List
 from langgraph.graph import StateGraph, START, END
 from utils.schemas import Decision
 from agents.query_evaluator import QueryEvaluator
+from agents.florence_agent import FlorenceAgent
+from agents.write_answer import AnswerWriter
 from utils.logger import logger
 # Graph state
 class VQAState(TypedDict):
     question: str  # User Question
     answer: str  # LLM Answer
     tool_decision: str  # Tools to use
-    ocr_text: str  # OCR text from the image
+    ocr_text: list[str]  # OCR text from the image
     od_results: list[str]  # Object detection results
     img_path: str  # Image path
     tool_decision_reasoning: str  # Reasoning for tool decision
@@ -25,6 +27,8 @@ class VQAWorkflow:
         self.query_evaluator_llm = llm.with_structured_output(Decision)  # Augment LLM with Team schema
         
         self.query_evaluator_agent = QueryEvaluator(self.query_evaluator_llm)
+        self.ocr_agent = FlorenceAgent()
+        self.answer_writer_agent = AnswerWriter(self.llm)
 
         # Initialize the workflow state
         self.state: VQAState = {
@@ -32,7 +36,7 @@ class VQAWorkflow:
             "answer": "",
             "od_results": [],
             "tool_decision": "",
-            "ocr_text": "",
+            "ocr_text": [],
             "img_path": ""
         }
 
@@ -42,6 +46,31 @@ class VQAWorkflow:
         result = self.query_evaluator_agent.evaluate_query(state["question"])
         self.state.update(result)
         return result
+    
+    def ocr_node(self, state: VQAState):
+        result = self.ocr_agent.perform_ocr(state["img_path"])
+        self.state.update(result)
+        return result
+    
+    def od_node(self, state: VQAState):
+        result = self.ocr_agent.perform_odetection(state["img_path"])
+        self.state.update(result)
+        return result
+    
+    def answer_node(self, state: VQAState):
+        result = self.answer_writer_agent.generate_answer(self.state["question"], self.state["img_path"], self.state["ocr_text"], self.state['od_results'])
+        self.state.update(result)
+        return result
+    
+    # Conditional edge function to route back to joke generator or end based upon feedback from the evaluator
+    def route_story_feedback(self, state: VQAState):
+        """Route back to story generator or continue based upon feedback from the evaluator"""
+        if state.get("tool_decision") == "ocr":
+            return "ocr_node"
+        elif state.get("tool_decision") == "od":
+            return "od_node"
+        else:
+            return "answer_node"
 
     def build_workflow(self):
         """
@@ -52,10 +81,23 @@ class VQAWorkflow:
         # self.orchestrator_worker_builder.add_node("story_generator", self.story_generator)
         # self.orchestrator_worker_builder.add_node("story_evaluator", self.story_evaluator)
         self.orchestrator_worker_builder.add_node("query_evaluator", self.query_evaluator)
+        self.orchestrator_worker_builder.add_node("ocr_node", self.ocr_node)
+        self.orchestrator_worker_builder.add_node("od_node", self.od_node)
+        self.orchestrator_worker_builder.add_node("answer_node", self.answer_node)
 
         # Add edges to connect nodes
         self.orchestrator_worker_builder.add_edge(START, "query_evaluator")
-        self.orchestrator_worker_builder.add_edge("query_evaluator", END)
+        self.orchestrator_worker_builder.add_conditional_edges(
+            "query_evaluator", self.route_story_feedback, {
+                "ocr_node": "ocr_node",
+                "od_node": "od_node",
+                "answer_node": "answer_node"
+            }
+        )
+        self.orchestrator_worker_builder.add_edge("ocr_node", "answer_node")
+        self.orchestrator_worker_builder.add_edge("od_node", "answer_node")
+        self.orchestrator_worker_builder.add_edge("answer_node", END)
+
         # self.orchestrator_worker_builder.add_edge("team_generator", "story_generator")
         # self.orchestrator_worker_builder.add_edge("story_generator", "story_evaluator")
         # self.orchestrator_worker_builder.add_conditional_edges(
@@ -72,13 +114,14 @@ class VQAWorkflow:
         logger.info("Compiling workflow...")
         self.orchestrator_worker = self.orchestrator_worker_builder.compile()
 
-    def invoke_workflow(self, question: str):
+    def invoke_workflow(self, question: str, img_path: str):
         """
         Runs the workflow with the initialized mission.
 
         Returns:
             dict: The final state after execution.
         """
-        logger.info(f"Invoking workflow for question: [yellow]{question}[/yellow]")
+        logger.info(f"Invoking workflow for question: [yellow]{question}[/yellow] and image: [yellow]{'img_path'}[/yellow]")
         self.state["question"] = question
-        return self.orchestrator_worker.invoke({"question": self.state["question"]})
+        self.state["img_path"] = img_path
+        return self.orchestrator_worker.invoke({"question": self.state["question"], "img_path": self.state["img_path"]})

@@ -22,6 +22,21 @@ Guidelines for the Story:
 
 Now, craft an engaging story!"""
 
+ANSWER_PROMPT_SYSTEM = """
+You are a VR Scene Answer Generation Agent. Your task is to generate a concise answer based on:
+
+- A user's question about the VR scene.
+- A processed frame (image) from the VR environment.
+- Extracted information from object detection (OD) and optical character recognition (OCR).
+
+Rules:
+1. Use detected objects (OD) to answer questions about object presence and locations.
+2. Use OCR-extracted text to answer questions related to reading signs, labels, or other textual content.
+3. Provide short and direct answers. Do not include unnecessary details.
+4. If the information is unavailable or unclear, respond with "I cannot determine that."
+
+"""
+
 IMPROVE_STORY_PROMPT_SYSTEM = """You are an expert storyteller, crafting epic adventures with thrilling detail. 
 Your task is to improve the story based on the given mission and the heroes involved and feedback. Use the feedback
 to enhance the story.
