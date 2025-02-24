@@ -46,13 +46,6 @@ class VQAWorkflow:
         }
 
         self.orchestrator_worker_builder = StateGraph(VQAState)
-
-    # def add_message(self, state: VQAState) -> VQAState:
-    #     new_message = HumanMessage(content=self.state['question']) if True else AIMessage(content="AI message")
-    #     return VQAState(
-    #         count=state["count"],
-    #         messages=state["messages"] + [new_message]
-    #     )
     
     def query_evaluator(self, state: VQAState):
         result = self.query_evaluator_agent.evaluate_query(state["question"])
@@ -89,9 +82,6 @@ class VQAWorkflow:
         Constructs the workflow by adding nodes and edges.
         """
         logger.info("Building workflow...")
-        # self.orchestrator_worker_builder.add_node("team_generator", self.team_generator)
-        # self.orchestrator_worker_builder.add_node("story_generator", self.story_generator)
-        # self.orchestrator_worker_builder.add_node("story_evaluator", self.story_evaluator)
         self.orchestrator_worker_builder.add_node("query_evaluator", self.query_evaluator)
         self.orchestrator_worker_builder.add_node("ocr_node", self.ocr_node)
         self.orchestrator_worker_builder.add_node("od_node", self.od_node)
@@ -109,15 +99,6 @@ class VQAWorkflow:
         self.orchestrator_worker_builder.add_edge("ocr_node", "answer_node")
         self.orchestrator_worker_builder.add_edge("od_node", "answer_node")
         self.orchestrator_worker_builder.add_edge("answer_node", END)
-
-        # self.orchestrator_worker_builder.add_edge("team_generator", "story_generator")
-        # self.orchestrator_worker_builder.add_edge("story_generator", "story_evaluator")
-        # self.orchestrator_worker_builder.add_conditional_edges(
-        #     "story_evaluator", self.route_story_feedback, {
-        #         "Accepted": END,
-        #         "Rejected + Feedback": "story_generator"
-        #     }
-        # )
 
     def compile_workflow(self):
         """
