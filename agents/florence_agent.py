@@ -16,11 +16,6 @@ class FlorenceAgent:
         """Evaluates the given user query and provides the tools to call."""
         logger.info(f"Performing OCR...")
 
-        # decision = self.llm.invoke([
-        #     SystemMessage(content=QUERY_EVALUATOR_PROMPT_SYSTEM),
-        #     HumanMessage(content=f"User query:\n\n{question}")
-        # ])
-
         ocr_results = run_example('<OCR>', img_path=img_path, processor=self.processor, model=self.model)
         ocr_results = ocr_results["<OCR>"].split('\n')
         logger.success(f"OCR Performed!")  # Logs first 100 chars
@@ -30,11 +25,6 @@ class FlorenceAgent:
     def perform_odetection(self, img_path: str):
         """Evaluates the given user query and provides the tools to call."""
         logger.info(f"Performing Object Detection...")
-
-        # decision = self.llm.invoke([
-        #     SystemMessage(content=QUERY_EVALUATOR_PROMPT_SYSTEM),
-        #     HumanMessage(content=f"User query:\n\n{question}")
-        # ])
 
         od_results = run_example('<OD>', img_path=img_path, processor=self.processor, model=self.model)
         od_results = od_results['<OD>']['labels']
