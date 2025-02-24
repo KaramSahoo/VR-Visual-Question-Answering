@@ -19,6 +19,4 @@ class QueryEvaluator:
         logger.success(f"Query Evaluation Complete! Tools to use: \"{decision.decision}\"")  # Logs first 100 chars
 
         return {"tool_decision": decision.decision, 
-                "tool_decision_reasoning": decision.reasoning,
-                # "messages": [HumanMessage(content=f"{question}")]
-                }
+                "tool_decision_reasoning": decision.reasoning,                }

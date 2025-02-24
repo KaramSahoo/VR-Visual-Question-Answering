@@ -57,8 +57,6 @@ class VQAWorkflow:
     def query_evaluator(self, state: VQAState):
         result = self.query_evaluator_agent.evaluate_query(state["question"])
         self.state.update(result)
-
-        return {**result}
         return result
     
     def ocr_node(self, state: VQAState):
