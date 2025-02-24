@@ -1,10 +1,13 @@
 from typing import TypedDict, Annotated, List
+from langchain.schema import SystemMessage, HumanMessage, AIMessage
 from langgraph.graph import StateGraph, START, END
 from utils.schemas import Decision
 from agents.query_evaluator import QueryEvaluator
 from utils.logger import logger
+from langgraph.graph.message import add_messages
 # Graph state
 class VQAState(TypedDict):
+    messages: Annotated[list[HumanMessage | AIMessage], add_messages]
     question: str  # User Question
     answer: str  # LLM Answer
     tool_decision: str  # Tools to use
@@ -28,20 +31,30 @@ class VQAWorkflow:
 
         # Initialize the workflow state
         self.state: VQAState = {
+            "messages": [],  # List of messages
             "question": "",
             "answer": "",
             "od_results": [],
             "tool_decision": "",
             "ocr_text": "",
-            "img_path": ""
+            "img_path": "",
+            "tool_decision_reasoning": "",
         }
 
         self.orchestrator_worker_builder = StateGraph(VQAState)
+
+    # def add_message(self, state: VQAState) -> VQAState:
+    #     new_message = HumanMessage(content=self.state['question']) if True else AIMessage(content="AI message")
+    #     return VQAState(
+    #         count=state["count"],
+    #         messages=state["messages"] + [new_message]
+    #     )
     
     def query_evaluator(self, state: VQAState):
         result = self.query_evaluator_agent.evaluate_query(state["question"])
         self.state.update(result)
-        return result
+
+        return {**result}
 
     def build_workflow(self):
         """
