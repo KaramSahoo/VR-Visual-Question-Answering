@@ -7,6 +7,8 @@ from agents.florence_agent import FlorenceAgent
 from agents.write_answer import AnswerWriter
 from utils.logger import logger
 from langgraph.graph.message import add_messages
+from gtts import gTTS
+
 # Graph state
 class VQAState(TypedDict):
     messages: Annotated[list[HumanMessage | AIMessage], add_messages]
@@ -62,9 +64,19 @@ class VQAWorkflow:
         self.state.update(result)
         return result
     
+    def store_audio(self, message):
+        # Text-to-speech conversion
+        language = 'en'
+        myobj = gTTS(text=message, lang=language, slow=False)
+        audio_file_path = r"C:/Users/ksahoo1.ASURITE/AppData/LocalLow/DefaultCompany/My project/Audio/audio_answer.mp3"
+        print("####################### Stored audio file")
+        myobj.save(audio_file_path)
+    
     def answer_node(self, state: VQAState):
         result = self.answer_writer_agent.generate_answer(self.state["question"], self.state["img_path"], self.state["ocr_text"], self.state['od_results'])
         self.state.update(result)
+
+        self.store_audio(result['answer'])
         return result
     
     # Conditional edge function to route back to joke generator or end based upon feedback from the evaluator
@@ -82,22 +94,22 @@ class VQAWorkflow:
         Constructs the workflow by adding nodes and edges.
         """
         logger.info("Building workflow...")
-        self.orchestrator_worker_builder.add_node("query_evaluator", self.query_evaluator)
-        self.orchestrator_worker_builder.add_node("ocr_node", self.ocr_node)
-        self.orchestrator_worker_builder.add_node("od_node", self.od_node)
+        # self.orchestrator_worker_builder.add_node("query_evaluator", self.query_evaluator)
+        # self.orchestrator_worker_builder.add_node("ocr_node", self.ocr_node)
+        # self.orchestrator_worker_builder.add_node("od_node", self.od_node)
         self.orchestrator_worker_builder.add_node("answer_node", self.answer_node)
 
         # Add edges to connect nodes
-        self.orchestrator_worker_builder.add_edge(START, "query_evaluator")
-        self.orchestrator_worker_builder.add_conditional_edges(
-            "query_evaluator", self.route_story_feedback, {
-                "ocr_node": "ocr_node",
-                "od_node": "od_node",
-                "answer_node": "answer_node"
-            }
-        )
-        self.orchestrator_worker_builder.add_edge("ocr_node", "answer_node")
-        self.orchestrator_worker_builder.add_edge("od_node", "answer_node")
+        self.orchestrator_worker_builder.add_edge(START, "answer_node")
+        # self.orchestrator_worker_builder.add_conditional_edges(
+        #     "query_evaluator", self.route_story_feedback, {
+        #         "ocr_node": "ocr_node",
+        #         "od_node": "od_node",
+        #         "answer_node": "answer_node"
+        #     }
+        # )
+        # self.orchestrator_worker_builder.add_edge("ocr_node", "answer_node")
+        # self.orchestrator_worker_builder.add_edge("od_node", "answer_node")
         self.orchestrator_worker_builder.add_edge("answer_node", END)
 
     def compile_workflow(self):
@@ -118,3 +130,19 @@ class VQAWorkflow:
         self.state["question"] = question
         self.state["img_path"] = img_path
         return self.orchestrator_worker.invoke({"question": self.state["question"], "img_path": self.state["img_path"]})
+
+    def get_state(self):
+        """
+        Returns the current state of the workflow.
+
+        Returns:
+            dict: The current state of the workflow.
+        """
+        return {"state": self.state}
+    
+    def call_tools(self, img_path: str):
+        result = self.ocr_agent.perform_ocr(img_path)
+        self.state.update(result)
+        result = self.ocr_agent.perform_odetection(img_path)
+        self.state.update(result)
+        return {"state": self.state}
