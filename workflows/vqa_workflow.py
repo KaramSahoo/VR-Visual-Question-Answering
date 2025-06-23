@@ -126,7 +126,7 @@ class VQAWorkflow:
         Returns:
             dict: The final state after execution.
         """
-        logger.info(f"Invoking workflow for question: [yellow]{question}[/yellow] and image: [yellow]{'img_path'}[/yellow]")
+        logger.info(f"Invoking workflow for question: [yellow]{question}[/yellow] and image: [yellow]{img_path}[/yellow]")
         self.state["question"] = question
         self.state["img_path"] = img_path
         return self.orchestrator_worker.invoke({"question": self.state["question"], "img_path": self.state["img_path"]})

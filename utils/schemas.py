@@ -19,3 +19,4 @@ class Decision(BaseModel):
     reasoning: str = Field(
         description="Provide reasoning for the decision.",
     )
+
