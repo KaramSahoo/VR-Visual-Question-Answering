@@ -8,14 +8,3 @@ Use the information above as additional information. Try to answer the question 
 The user does not want any special characters or formatting in the answer.
 The user also does not want to know what additional information you used to answer the question, just the final answer.
 """
-
-IMPROVE_STORY_PROMPT_USER = """
-- Story: {story}
-
-- Mission: {mission}
-- Team Name: {team_name}
-- Heroes:
-{heroes_details}
-
-- Feedback: {feedback}
-"""

@@ -54,19 +54,6 @@ def setup_llm():
         g.workflow = workflow
         logger.info("Using existing Workflow state.")
 
-# @app.before_request
-# def setup_db():
-#     """Ensures MongoDB is initialized only once."""
-#     global db_initialized
-#     if not db_initialized:
-#         init_db()
-#         db_initialized = True
-
-# @app.teardown_appcontext
-# def teardown_db(exception):
-#     """Close database connection after request."""
-#     close_db(exception)
-
 
 # Register all blueprints
 app.register_blueprint(generate_bp, url_prefix='/generate')
