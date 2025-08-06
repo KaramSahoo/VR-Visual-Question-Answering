@@ -1,0 +1,8 @@
+flask=3.1.0
+flask-cors=5.0.0
+langchain=0.3.19
+langchain-ollama=0.3.3
+langchain-openai=0.3.6
+langgraph=0.2.74
+matplotlib=3.10.1
+openai=1.64.0
