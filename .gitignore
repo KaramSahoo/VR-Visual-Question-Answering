@@ -1,3 +1,5 @@
+# Ignore answer log file
+answer_log.csv
 # Ignore Visual Studio Code settings folder
 .vscode/
 

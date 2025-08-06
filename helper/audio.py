@@ -72,21 +72,3 @@ def speech_to_text(input_path: str, language: str) -> None:
         # print(f"####################### Processed audio file: {text}")
         # write_transcription_to_file(text, output_path)
         return text
-
-
-# if __name__ == '__main__':
-#     print('Please enter the path to an audio file (WAV, MP3, M4A, OGG, or FLAC):')
-#     input_path = input().strip()
-#     if not os.path.isfile(input_path):
-#         print('Error: File not found.')
-#         exit(1)
-#     else:
-#         print('Please enter the path to the output file:')
-#         output_path = input().strip()
-#         print('Please enter the language code (e.g. en-US):')
-#         language = input().strip()
-#         try:
-#             speech_to_text(input_path, output_path, language)
-#         except Exception as e:
-#             print('Error:', e)
-#             exit(1)

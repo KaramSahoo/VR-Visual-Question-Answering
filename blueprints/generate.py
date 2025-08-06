@@ -11,7 +11,6 @@ generate_bp = Blueprint('generate', __name__)
 @generate_bp.route('/', methods=['POST'])
 def generate_answer():
     try:
-        # Extract paths for screenshot and audio from the JSON payload
         screenshot_path = "screenshot.png"
         audio_path = "audio.wav"
 
@@ -48,60 +47,10 @@ def generate_answer():
         # Error handling for any other issues (e.g., invalid JSON format)
         return jsonify({"error": str(e)}), 500
 
-# Route 2: Dummy mission response for frontend testing
-@generate_bp.route('/test', methods=['POST'])
-def test_mission():
-    """Returns a dummy mission response for frontend testing."""
-    dummy_state = {
-        "team_name": "Guardians of Code",
-        "team": [
-            {
-                "name": "CodeMaster",
-                "alias": "The Debugger",
-                "power": "Can fix any bug instantly",
-                "origin": "Silicon Valley",
-                "weapon": {
-                    "weapon_type": "Keyboard",
-                    "weapon_name": "Bug Slayer",
-                    "weapon_lore": "A mystical keyboard that can auto-correct any syntax error."
-                }
-            },
-            {
-                "name": "CyberKnight",
-                "alias": "The Encrypter",
-                "power": "Unbreakable cyber defenses",
-                "origin": "Dark Web",
-                "weapon": {
-                    "weapon_type": "Shield",
-                    "weapon_name": "Firewall Shield",
-                    "weapon_lore": "A shield forged from the strongest encryption algorithms."
-                }
-            }
-        ],
-        "story": "The Guardians of Code unite to battle the evil forces of malware and cyber threats!",
-        "story_feedback": "An epic tale of heroism and cybersecurity!",
-        "feedback_grade": "A+"
-    }
-
-    return jsonify({
-        "message": f"Team {dummy_state['team_name']} has been summoned!",
-        "state": {
-            **dummy_state,  
-            "team": [hero for hero in dummy_state["team"]]  # Convert to ensure frontend compatibility
-        }
-    }), 200
 
 @generate_bp.route('/state', methods=['GET'])
 def get_state():
     try:
-        # Get the JSON data from the request
-        # data = request.get_json()
-        
-        # Check if 'img_path' key is in the JSON data
-        # if 'img_path' not in data:
-        #     return jsonify({"error": "Missing 'img_path' key in request data"}), 400
-
-        # img_path = data['img_path']
 
         # Initialize workflow
         workflow = g.workflow
@@ -120,6 +69,7 @@ def get_state():
     except Exception as e:
         # Error handling for any other issues (e.g., invalid JSON format)
         return jsonify({"error": str(e)}), 500
+    
     
 @generate_bp.route('/tools', methods=['GET'])
 def call_tools():
