@@ -9,7 +9,7 @@ import csv
 
 
 class AnswerWriter:
-    def __init__(self, llm, log_file="answer_log.csv"):
+    def __init__(self, llm, log_file="answer_log_sighted_P12.csv"):
         """Initialize the story generator agent."""
         self.llm = llm
         self.log_file = log_file
@@ -19,7 +19,7 @@ class AnswerWriter:
             return base64.b64encode(image_file.read()).decode('utf-8')
         
     def log_to_csv(self, question, answer, time_taken):
-        """Appends the question, answer, and time taken into a CSV file."""
+        """Appends the question, answer, time taken, and timestamp into a CSV file."""
         file_exists = os.path.isfile(self.log_file)
 
         with open(self.log_file, mode="a", newline="", encoding="utf-8") as file:
@@ -27,9 +27,10 @@ class AnswerWriter:
             
             # Write headers if file is new
             if not file_exists:
-                writer.writerow(["Question", "Answer", "Time Taken (s)"])
+                writer.writerow(["Question", "Answer", "Time Taken (s)", "Timestamp"])
             
-            writer.writerow([question, answer, round(time_taken, 2)])
+            timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            writer.writerow([question, answer, round(time_taken, 2), timestamp])
     
     def query_llm(self, question, screenshot_full_path):
         # print(llm_chain.invoke({'question': question})['text'])
