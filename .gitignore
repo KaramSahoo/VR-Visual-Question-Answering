@@ -17,4 +17,7 @@ instance/
 venv/
 env/
 
+evaluate_llm/
+evaluations/
+
 *.csv
