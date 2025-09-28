@@ -46,6 +46,7 @@ def generate_answer():
         # Error handling for any other issues (e.g., invalid JSON format)
         return jsonify({"error": str(e)}), 500
     
+# For Pilot Study, can be ignored if all images are stored in the same folder
 @generate_bp.route('/pilot', methods=['POST'])
 def generate_pilot_answer():
     try:
@@ -144,6 +145,7 @@ def call_tools():
         return jsonify({"error": str(e)}), 500
 
 
+# For Pilot Study, can be ignored if all images are stored in the same folder
 @generate_bp.route('/pilot/tools', methods=['GET'])
 def call_pilot_tools():
     try:

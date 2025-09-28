@@ -6,16 +6,17 @@ from blueprints.generate import generate_bp
 from utils.logger import logger
 from config import config
 from workflows.vqa_workflow import VQAWorkflow
-from langchain_openai import ChatOpenAI
 
-from database.connection import close_db, get_db, init_db
-
-
+from model_engine import get_llm
 from dotenv import load_dotenv
+import os
 load_dotenv()
 
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+MODEL_PROVIDER = os.getenv('MODEL_PROVIDER', 'openai')
+MODEL_NAME = os.getenv('MODEL_NAME', 'gpt-4o-mini')
+
+llm = get_llm(MODEL_PROVIDER, MODEL_NAME)
 workflow = VQAWorkflow(llm)
 db_initialized = False
 llm_initialized = False
